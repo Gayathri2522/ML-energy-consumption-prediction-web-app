@@ -1,5 +1,6 @@
 from flask import Flask, render_template, url_for, request, json
 import pandas as pd
+import numpy as np
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.model_selection import train_test_split
@@ -7,6 +8,7 @@ from sklearn.model_selection import train_test_split
 
 def model_trainer(vals):
     #reading dataset
+
     energy = pd.read_csv('KAG_energydata_complete.csv')
     print(energy)
 
@@ -24,10 +26,13 @@ def model_trainer(vals):
     y = energy['Appliances']
     X_train,X_test,y_train,y_test=train_test_split(X,y,test_size=0.3)
     #decision regression tree
+    float_vals = np.array(vals[0])
+    value_for_prediction = []
+    value_for_prediction.append(float_vals.astype(float))
     clf11 = DecisionTreeRegressor()
     clf11.fit(X_train,y_train)
-    y_pred = clf11.predict(vals)
-    return "The predicted value is: " + str(y_pred)
+    y_pred = clf11.predict(value_for_prediction)
+    return render_template("display.html", predicted_value=str(y_pred[0]) )
 
 app = Flask(__name__)
 
@@ -36,7 +41,6 @@ def index():
     if request.method == 'POST':
         data = request.form.getlist("values")
         values = [[i for i in data]]
-        return values
         return model_trainer(values)
     else:
         return render_template("index.html")
